@@ -9,24 +9,24 @@ from src.interface.schemas import (
     CreatedInboxResponse, InboxPublicResponse
 )
 
-router = APIRouter(tags=["Inboxes"])
+router = APIRouter(tags=["Inboxes"], prefix="/inboxes")
 
-@router.post("/inboxes", response_model=CreatedInboxResponse, status_code=201)
+@router.post("/", response_model=CreatedInboxResponse, status_code=201)
 def create_inbox(
     req: CreateInboxRequest, 
     service: InboxService = Depends(get_service)
 ):
 
-    inbox_id, signature = service.create_inbox(
+    inbox_id, signature= service.create_inbox(
         topic=req.topic,
         username=req.username,
         secret=req.secret,
         expires_at=req.expires_at,
         allow_anonymous=req.allow_anonymous
     )
-    return CreatedInboxResponse(id=inbox_id, tripcode=signature)
+    return CreatedInboxResponse(id=inbox_id, signature=signature)
 
-@router.get("/inboxes/{inbox_id}", response_model=InboxPublicResponse)
+@router.get("/{inbox_id}", response_model=InboxPublicResponse)
 def get_inbox(
     inbox_id: uuid.UUID, 
     service: InboxService = Depends(get_service)
@@ -36,7 +36,7 @@ def get_inbox(
         return JSONResponse(status_code=404, content={"detail": "Inbox not found"})
     return inbox
 
-@router.post("/inboxes/{inbox_id}/messages", status_code=201)
+@router.post("/{inbox_id}/messages", status_code=201)
 def reply_to_inbox(
     inbox_id: uuid.UUID, 
     req: ReplyRequest, 
@@ -54,7 +54,7 @@ def reply_to_inbox(
          
     return {"message": "Reply sent"}
 
-@router.patch("/inboxes/{inbox_id}/topic")
+@router.patch("/{inbox_id}/topic")
 def change_topic(
     inbox_id: uuid.UUID,
     req: ChangeTopicRequest,
