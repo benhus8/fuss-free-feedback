@@ -10,7 +10,8 @@ ENV_FILE_PATH = ROOT_DIR / ".env"
 class Settings(BaseSettings):
     DATABASE_URL: str
     SECRET_KEY: str
-    TRIPCODE_SALT: str = "default_salt_change_me"
+    TRIPCODE_SALT: str
+    API_VERSION: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH, 
