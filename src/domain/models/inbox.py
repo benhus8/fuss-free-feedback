@@ -3,12 +3,12 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from domain.models.message import Message
-from domain.exceptions import (
+from src.domain.models.message import Message
+from src.domain.exceptions import (
     InboxExpiredError,
     TopicChangeNotAllowedError,
     AnonymousMessagesNotAllowedError,
-    InvalidSignatureError
+    InvalidSignatureError,
 )
 
 
@@ -48,9 +48,7 @@ class Inbox:
             raise AnonymousMessagesNotAllowedError("Signature required.")
 
         new_msg = Message(
-            body=body,
-            timestamp=datetime.now(timezone.utc),
-            signature=signature
+            body=body, timestamp=datetime.now(timezone.utc), signature=signature
         )
         self.messages.append(new_msg)
         return new_msg
