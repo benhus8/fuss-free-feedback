@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated, List, Optional
 from pydantic import BaseModel, Field, FutureDatetime, ConfigDict, model_validator
 
 
@@ -20,9 +20,13 @@ class BaseSchema(BaseModel):
 
     model_config = ConfigDict(
         str_strip_whitespace=True,
-        extra="forbid", 
+        extra="forbid",
     )
 
+
+class Credentials(BaseSchema):
+    username: UsernameType
+    secret: SecretType
 
 
 class CreateInboxRequest(BaseSchema):
@@ -57,16 +61,19 @@ class ChangeTopicRequest(BaseSchema):
     secret: SecretType
 
 
-class InboxPublicResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class InboxOverview(BaseModel):
     id: uuid.UUID
     topic: str
-    owner_signature: (
-        str
-    )
     expires_at: datetime
     allow_anonymous: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InboxesResponse(BaseModel):
+    inboxes: List[InboxOverview]
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CreatedInboxResponse(BaseModel):
@@ -80,3 +87,22 @@ class ProblemDetails(BaseModel):
     status: int
     detail: str
     instance: Optional[str] = None
+
+
+class MessageOverview(BaseModel):
+    id: int
+    body: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MessagesResponse(BaseModel):
+    messages: List[MessageOverview]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Credentials(BaseModel):
+    username: str
+    secret: str
