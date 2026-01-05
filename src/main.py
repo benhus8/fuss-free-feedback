@@ -8,7 +8,8 @@ from src.interface.api import inboxes
 from src.interface.schemas import ProblemDetails
 from src.interface.exception_handlers import (
     DomainError,
-    EXCEPTION_MAPPING,
+    domain_exception_handler,
+    unhandled_exception_handler,
 )
 
 
@@ -19,13 +20,5 @@ app = FastAPI(
 
 app.include_router(inboxes.router, prefix=f"/api/{settings.API_VERSION}")
 
-
-@app.exception_handler(DomainError)
-async def domain_exception_handler(request: Request, exc: DomainError):
-    http_status, title = EXCEPTION_MAPPING.get(
-        type(exc), (status.HTTP_400_BAD_REQUEST, "Business Rule Violation")
-    )
-    problem = ProblemDetails(
-        title=title, status=http_status, detail=str(exc), instance=str(request.url)
-    )
-    return JSONResponse(status_code=http_status, content=problem.model_dump())
+app.add_exception_handler(DomainError, domain_exception_handler)
+app.add_exception_handler(Exception, unhandled_exception_handler)
