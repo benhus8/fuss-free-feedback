@@ -48,7 +48,7 @@ class Inbox:
             raise AnonymousMessagesNotAllowedError("Signature required.")
 
         new_msg = Message(
-            body=body, timestamp=datetime.now(timezone.utc), signature=signature
+            body=body, created_at=datetime.now(timezone.utc), signature=signature
         )
         self.messages.append(new_msg)
         return new_msg
