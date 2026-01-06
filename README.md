@@ -2,29 +2,63 @@
 
 ## 🏗 Project Architecture
 
-The project follows **Clean Architecture** (also known as Hexagonal Architecture) principles to ensure separation of concerns, scalability, and testability. The code is organized into concentric layers, with the **Domain** being the core dependency.
+This project follows Clean Architecture principles. The primary goal was to decouple the core business logic from the delivery mechanism (FastAPI) and the persistence layer (SQLModel/PostgreSQL).
+
+By enforcing strict separation of concerns, the application becomes:
+
+- Framework Agnostic: The core logic doesn't know it's running inside FastAPI.
+
+- Database Independent: The domain models are pure Python objects, separate from database tables.
+
+- Highly Testable: Business rules can be tested in isolation without spinning up a database or HTTP server.
 
 ```text
-├── domain/                  # The Core (Pure Python, No Frameworks)
-│   ├── models/              # Aggregate Roots & Entities (e.g., Inbox, Message)
-│   ├── repositories/        # Abstract Interfaces (Ports) for repositories
-│   ├── services/            # Domain Services (Business logic spanning multiple entities)
-│   └── vo/                  # Value Objects (Immutable domain objects)
+src/
+├── domain/                  # Core (Pure Python)
+│   ├── models/              # Entities/Aggregates (Inbox, Message)
+│   ├── repositories/        # Repository interfaces (ports)
+│   └── exceptions.py        # Domain exceptions
 │
-├── application/             # Application Layer (Use Cases)
-│   ├── commands/            # Write operations (e.g., CreateInbox, ReplyToInbox)
-│   ├── queries/             # Read operations (e.g., GetInbox)
-│   └── services/            # Application Services (Orchestrators)
+├── application/             # Application Layer (Use Cases orchestration)
+│   ├── services/            # Application Services (e.g., InboxService)
+│   └── utils/               # Utility functions (e.g., generate_tripcode)
 │
-├── infrastructure/          # Adapters & Implementation Details
-│   ├── database/            # SQLModel/SQLAlchemy models & DB setup
-│   ├── repositories/        # Implementation of Domain Repositories (Adapters)
-│   └── extern/              # External services (e.g., Email, 3rd party APIs)
+├── infrastructure/          # Adapters & implementations
+│   ├── database/            # DB setup & SQLModel/SQLAlchemy models
+│   │   └── models/          # InboxDB, MessageDB
+│   ├── repositories/        # SQLAlchemy repository implementations
+│   └── mappers/             # DB <-> Domain mappers (InboxMapper, MessageMapper)
 │
-├── interface/               # Entry Points (The "Driving" Adapters)
-│   ├── api/                 # FastAPI Endpoints (Controllers)
-│   ├── schemas/             # Pydantic Models (DTOs - Input/Output validation)
-│   └── dependencies/        # Dependency Injection definitions
+├── interface/               # Entry points (Driving adapters)
+│   ├── api/                 # FastAPI endpoints (controllers)
+│   ├── schemas/             # Pydantic DTOs
+│   └── dependencies/        # DI definitions (e.g., get_service)
 │
-├── exceptions.py            # Global exception handling & definitions
 └── main.py                  # Application entry point & configuration
+```
+
+## Key Architectural Decisions
+Domain Isolation: The domain layer has zero dependencies on external frameworks. It defines what the application is, not how it stores data.
+
+Dependency Inversion: The application layer depends on repository interfaces (abstract classes), not concrete implementations. The infrastructure layer injects the real database logic at runtime.
+
+Data Mapping: We use explicit Mappers to convert between Domain Entities (used for logic) and SQLModel classes (used for the database). This prevents database constraints from leaking into business rules.
+
+
+## 🔐 API Authorization Strategy
+
+This project implements a pragmatic, hybrid authorization model tailored for a "stateless" tripcode system. We distinguish between creating/signing content (where credentials are part of the payload) and accessing/managing resources (where credentials act as session keys via headers).
+
+| Method  | Endpoint                            | Auth Source | Role    | Description |
+| :------ | :---------------------------------- | :---------- | :------ | :---------- |
+| `POST`  | `/inboxes`                          | **Body**    | Creator | Credentials in payload generate the owner signature and create the resource. |
+| `GET`   | `/inboxes/{inbox_id}`               | **None**    | Guest   | Shows public inbox metadata so anyone can reply. No messages included. |
+| `POST`  | `/inboxes/{inbox_id}/messages`      | **Body**    | Author  | Credentials optional; when provided they sign the message (tripcode). |
+| `GET`   | `/inboxes`                          | **Headers** | Owner   | Lists inboxes for the authenticated owner (pagination: `page`, `page_size`). |
+| `GET`   | `/inboxes/{inbox_id}/messages`      | **Headers** | Owner   | Reads messages for the inbox (pagination: `page`, `page_size`). |
+| `PATCH` | `/inboxes/{inbox_id}/topic`         | **Headers** | Owner   | Changes the inbox topic (owner-only). |
+
+### Headers Specification
+For endpoints requiring Headers auth (Owner role), use:
+- `X-username`: Your username
+- `X-secret`: Your secret password
