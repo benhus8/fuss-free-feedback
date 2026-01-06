@@ -63,3 +63,9 @@ class SqlAlchemyInboxRepository(InboxRepository):
         result = await self.session.execute(statement)
         rows = result.scalars().all()
         return [self.mapper.to_domain(r) for r in rows]
+
+    async def add_message(self, message: Message) -> Message:
+        db_message = self.message_mapper.to_db(message)
+        self.session.add(db_message)
+        await self.session.commit()
+        return self.message_mapper.to_domain(db_message)
