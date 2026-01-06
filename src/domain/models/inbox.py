@@ -37,6 +37,18 @@ class Inbox:
             raise TopicChangeNotAllowedError("Inbox already has replies.")
         self.topic = new_topic
 
+    def validate_new_message(self, signature: Optional[str]) -> None:
+        """
+        checks if a new message can be added
+        """
+        if self.is_expired:
+            raise InboxExpiredError("This inbox has expired.")
+
+        if not self.allow_anonymous and signature is None:
+            raise AnonymousMessagesNotAllowedError(
+                "Anonymous messages are not allowed here."
+            )
+
     def add_message(self, body: str, signature: Optional[str] = None) -> Message:
         """
         Adds a reply enforcing expiration and anonymity rules.
