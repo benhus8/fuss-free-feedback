@@ -18,10 +18,17 @@ from src.interface.schemas import (
 router = APIRouter(tags=["Inboxes"], prefix="/inboxes")
 
 
-@router.post("/", response_model=CreatedInboxResponse, status_code=201)
-def create_inbox(req: CreateInboxRequest, service: InboxService = Depends(get_service)):
+@router.post(
+    "/",
+    response_model=CreatedInboxResponse,
+    status_code=201,
+    summary="Create a new inbox and return its id and owner signature",
+)
+async def create_inbox(
+    req: CreateInboxRequest, service: InboxService = Depends(get_service)
+):
 
-    inbox_id, signature = service.create_inbox(
+    inbox_id, signature = await service.create_inbox(
         topic=req.topic,
         username=req.username,
         secret=req.secret,
@@ -31,35 +38,49 @@ def create_inbox(req: CreateInboxRequest, service: InboxService = Depends(get_se
     return CreatedInboxResponse(id=inbox_id, signature=signature)
 
 
-@router.get("/{inbox_id}", response_model=InboxPublicResponse)
-def get_inbox_details(
+@router.get(
+    "/{inbox_id}",
+    response_model=InboxPublicResponse,
+    summary="Get public metadata for an inbox",
+)
+async def get_inbox_details(
     inbox_id: uuid.UUID,
     service: InboxService = Depends(get_service),
 ):
-    inbox = service.get_inbox_metadata(inbox_id)
+    inbox = await service.get_inbox_metadata(inbox_id)
     return inbox
 
 
-@router.post("/{inbox_id}/messages", status_code=201, response_class=Response)
-def reply_to_inbox(
+@router.post(
+    "/{inbox_id}/messages",
+    status_code=201,
+    response_class=Response,
+    summary="Post a message to an inbox; optionally sign with username/secret",
+)
+async def reply_to_inbox(
     inbox_id: uuid.UUID,
     req: ReplyRequest,
     service: InboxService = Depends(get_service),
 ):
-    service.reply_to_inbox(
+    await service.reply_to_inbox(
         inbox_id=inbox_id, body=req.body, username=req.username, secret=req.secret
     )
 
 
-@router.patch("/{inbox_id}/topic", status_code=204, response_class=Response)
-def change_topic(
+@router.patch(
+    "/{inbox_id}/topic",
+    status_code=204,
+    response_class=Response,
+    summary="Update the inbox topic (owner-only)",
+)
+async def change_topic(
     inbox_id: uuid.UUID,
     req: ChangeTopicRequest,
     x_username: str = Header(..., alias="X-username"),
     x_secret: str = Header(..., alias="X-secret"),
     service: InboxService = Depends(get_service),
 ):
-    service.change_topic(
+    await service.change_topic(
         inbox_id=inbox_id,
         new_topic=req.new_topic,
         username=x_username,
@@ -67,8 +88,12 @@ def change_topic(
     )
 
 
-@router.get("/{inbox_id}/messages", response_model=MessagesResponse)
-def get_inbox_messages(
+@router.get(
+    "/{inbox_id}/messages",
+    response_model=MessagesResponse,
+    summary="Read inbox messages (owner-only) with pagination",
+)
+async def get_inbox_messages(
     inbox_id: uuid.UUID,
     x_username: str = Header(..., alias="X-username"),
     x_secret: str = Header(..., alias="X-secret"),
@@ -76,7 +101,7 @@ def get_inbox_messages(
     page_size: int = Query(20, ge=1, le=100),
     service: InboxService = Depends(get_service),
 ):
-    messages = service.get_messages(
+    messages = await service.get_messages(
         inbox_id=inbox_id,
         username=x_username,
         secret=x_secret,
@@ -87,15 +112,19 @@ def get_inbox_messages(
     return MessagesResponse(messages=messages)
 
 
-@router.get("/", response_model=InboxesResponse)
-def search_inboxes(
+@router.get(
+    "/",
+    response_model=InboxesResponse,
+    summary="List inboxes for the authenticated owner with pagination",
+)
+async def search_inboxes(
     x_username: str = Header(..., alias="X-username"),
     x_secret: str = Header(..., alias="X-secret"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     service: InboxService = Depends(get_service),
 ):
-    inboxes = service.list_user_inboxes(
+    inboxes = await service.list_user_inboxes(
         username=x_username,
         secret=x_secret,
         page=page,

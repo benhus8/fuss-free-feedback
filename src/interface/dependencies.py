@@ -1,18 +1,20 @@
 from fastapi import Depends
-from sqlmodel import Session
-from sqlalchemy import create_engine
-from src.config import settings
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import AsyncGenerator
+from src.domain.repositories import InboxRepository
 from src.infrastructure.repositories.inbox import SqlAlchemyInboxRepository
 from src.application.services.inbox import InboxService
+from src.infrastructure.database import get_session
 
-engine = create_engine(settings.DATABASE_URL)
 
-def get_session():
-    with Session(engine) as session:
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+    async for session in get_session():
         yield session
 
-def get_repo(session: Session = Depends(get_session)):
+
+def get_repo(session: AsyncSession = Depends(get_db_session)) -> InboxRepository:
     return SqlAlchemyInboxRepository(session)
 
-def get_service(repo: SqlAlchemyInboxRepository = Depends(get_repo)) -> InboxService:
+
+def get_service(repo: InboxRepository = Depends(get_repo)) -> InboxService:
     return InboxService(repository=repo)
