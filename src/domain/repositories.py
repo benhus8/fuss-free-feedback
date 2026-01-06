@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import uuid
-from typing import Optional
+from typing import Optional, List
 from src.domain.models import Inbox
 from src.domain.models.message import Message
 
@@ -11,7 +11,7 @@ class InboxRepository(ABC):
     """
 
     @abstractmethod
-    async def save(self, inbox: Inbox) -> None:
+    async def save(self, inbox: Inbox) -> Inbox:
         """
         Saves or updates the Inbox aggregate root and its children (messages).
         """
@@ -27,7 +27,7 @@ class InboxRepository(ABC):
     @abstractmethod
     async def get_by_signature(
         self, signature: str, limit: int, offset: int
-    ) -> list[Inbox]:
+    ) -> List[Inbox]:
         """
         Retrieves all Inboxes owned by the given signature.
         """
@@ -36,7 +36,7 @@ class InboxRepository(ABC):
     @abstractmethod
     async def get_messages_for_inbox(
         self, inbox_id: uuid.UUID, limit: int, offset: int
-    ) -> list:
+    ) -> List[Message]:
         """
         Retrieves messages for a given Inbox with pagination.
         """

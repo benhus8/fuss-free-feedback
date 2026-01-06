@@ -74,6 +74,7 @@ class InboxesResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class InboxPublicResponse(BaseModel):
     id: uuid.UUID
     topic: str
