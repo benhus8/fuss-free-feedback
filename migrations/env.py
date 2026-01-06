@@ -76,7 +76,7 @@ async def run_async_migrations() -> None:
     and associate a connection with the context.
 
     """
-    # Tworzymy silnik ASYNC na podstawie konfiguracji z alembic.ini
+
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -84,8 +84,6 @@ async def run_async_migrations() -> None:
     )
 
     async with connectable.connect() as connection:
-        # Tu jest magia: uruchamiamy synchroniczną funkcję migracji
-        # wewnątrz asynchronicznego połączenia
         await connection.run_sync(do_run_migrations)
 
     await connectable.dispose()
@@ -94,7 +92,6 @@ async def run_async_migrations() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
 
-    # Uruchamiamy pętlę asyncio
     asyncio.run(run_async_migrations())
 
 
