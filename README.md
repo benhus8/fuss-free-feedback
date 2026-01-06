@@ -1,4 +1,27 @@
-# fuss-free-feedback
+
+# Fuss-Free Feedback API
+A privacy-focused, stateless anonymous feedback platform built with Python & FastAPI.
+
+Fuss-Free Feedback is a modern take on anonymous messaging systems (like NGL or Tellonym), designed with privacy and simplicity in mind. Unlike traditional platforms, it requires no registration, no email, and no persistent user accounts.
+
+Instead of a database of users, the system relies on Tripcodes—a cryptographic hash mechanism popularized by imageboards. This allows users to establish a consistent identity and manage their inboxes using only a username and a secret phrase, without ever storing sensitive personal data on the server.
+
+### Key Features
+- Zero Registration: Users can create an inbox instantly. No "Sign Up" flow, no email verification.
+
+- Tripcode Identity: Authentication is stateless. Your Username + Secret generates a unique Signature (Tripcode) that proves ownership.
+
+- Privacy First: Messages can be anonymous or signed. The server stores only what is necessary.
+
+
+### How It Works
+1. Create: You choose a Topic (e.g., "AMA about Python"), a Username, and a Secret.
+
+2. Share: You get a public link (e.g., /inboxes/uuid) to share with others.
+
+3. Receive: People visit the link and send anonymous (or signed) messages.
+
+4. Read: You use your Secret to authenticate and read the replies. Only the holder of the Secret can decrypt the permission to view the inbox.
 
 ## 🏗 Project Architecture
 
