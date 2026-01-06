@@ -1,11 +1,7 @@
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 
 from src.config import settings
-from src.interface.dependencies import engine
 from src.interface.api import inboxes
-from src.interface.schemas import ProblemDetails
 from src.interface.exception_handlers import (
     DomainError,
     domain_exception_handler,

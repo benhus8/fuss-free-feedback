@@ -12,7 +12,7 @@ class InboxService:
     def __init__(self, repository: InboxRepository):
         self.repository = repository
 
-    def create_inbox(
+    async def create_inbox(
         self,
         topic: str,
         username: str,
@@ -30,13 +30,13 @@ class InboxService:
             allow_anonymous=allow_anonymous,
         )
 
-        saved = self.repository.save(new_inbox)
+        saved = await self.repository.save(new_inbox)
         return saved.id, signature
 
-    def reply_to_inbox(
+    async def reply_to_inbox(
         self, inbox_id: uuid.UUID, body: str, username: str | None, secret: str | None
     ) -> None:
-        inbox = self.repository.get_by_id(inbox_id)
+        inbox = await self.repository.get_by_id(inbox_id)
         if not inbox:
             return None
 
@@ -46,12 +46,12 @@ class InboxService:
 
         inbox.add_message(body, signature=sender_signature)
 
-        self.repository.save(inbox)
+        await self.repository.save(inbox)
 
-    def change_topic(
+    async def change_topic(
         self, inbox_id: uuid.UUID, new_topic: str, username: str, secret: str
     ) -> Inbox | None:
-        inbox = self.repository.get_by_id(inbox_id)
+        inbox = await self.repository.get_by_id(inbox_id)
 
         if not inbox:
             raise NotFoundError("Inbox not found.")
@@ -61,35 +61,35 @@ class InboxService:
 
         inbox.change_topic(new_topic)
 
-        self.repository.save(inbox)
+        await self.repository.save(inbox)
         return inbox
 
-    def get_messages(
+    async def get_messages(
         self, inbox_id: uuid.UUID, username: str, secret: str, page: int, page_size: int
     ) -> List[Message]:
-        inbox = self.repository.get_by_id(inbox_id)
+        inbox = await self.repository.get_by_id(inbox_id)
         if not inbox:
             raise NotFoundError("Inbox not found.")
 
         provided_signature = generate_tripcode(username, secret)
         inbox.validate_ownership(provided_signature)
 
-        messages = self.repository.get_messages_for_inbox(
+        messages = await self.repository.get_messages_for_inbox(
             inbox_id=inbox_id, limit=page_size, offset=(page - 1) * page_size
         )
 
         return messages
 
-    def list_user_inboxes(
+    async def list_user_inboxes(
         self, username: str, secret: str, page: int, page_size: int
     ) -> List[Inbox]:
         owner_signature = generate_tripcode(username, secret)
-        return self.repository.get_by_signature(
+        return await self.repository.get_by_signature(
             owner_signature, limit=page_size, offset=(page - 1) * page_size
         )
 
-    def get_inbox_metadata(self, inbox_id: uuid.UUID) -> Inbox:
-        inbox = self.repository.get_by_id(inbox_id)
+    async def get_inbox_metadata(self, inbox_id: uuid.UUID) -> Inbox:
+        inbox = await self.repository.get_by_id(inbox_id)
 
         if not inbox:
             raise NotFoundError("Inbox not found.")
