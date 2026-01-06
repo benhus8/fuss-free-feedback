@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import uuid
 from typing import Optional
 from src.domain.models import Inbox
+from src.domain.models.message import Message
 
 
 class InboxRepository(ABC):
@@ -38,5 +39,12 @@ class InboxRepository(ABC):
     ) -> list:
         """
         Retrieves messages for a given Inbox with pagination.
+        """
+        pass
+
+    @abstractmethod
+    async def add_message(self, message: Message) -> Message:
+        """
+        Saves a single Message entity to the database.
         """
         pass
