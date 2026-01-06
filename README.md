@@ -1,4 +1,3 @@
-
 # Fuss-Free Feedback API
 A privacy-focused, stateless anonymous feedback platform built with Python & FastAPI.
 
@@ -87,5 +86,52 @@ For endpoints requiring Headers auth (Owner role), use:
 - `X-secret`: Your secret password
 
 
+# Running the project
+
+## Prerequisites
+- Docker and Docker Compose
+- Optional (local dev): Python 3.11+ and uv
+- Optional (lint/format): Ruff (via uvx)
+
+## Run with Docker
+Build and start services:
+```bash
+docker compose up -d
+```
+
+## API Docs
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## Local development (without Docker)
+Run the API with auto-reload:
+```bash
+uv run uvicorn main:app --reload
+```
+
 ## Run tests
+All tests:
+```bash
+uv run pytest -q
+```
+
+Integration-only:
+```bash
 uv run pytest -q tests/integration
+```
+
+## Lint and format
+Check:
+```bash
+uvx ruff check src
+```
+
+Auto-fix lint issues:
+```bash
+uvx ruff check --fix src
+```
+
+Format code:
+```bash
+uvx ruff format
+```
