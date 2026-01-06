@@ -6,7 +6,7 @@ from src.domain.exceptions import NotFoundError
 from src.application.utils import generate_tripcode
 from src.domain.models import Inbox, Message
 from src.domain.repositories import InboxRepository
-
+from datetime import timezone
 
 class InboxService:
     def __init__(self, repository: InboxRepository):
@@ -34,19 +34,24 @@ class InboxService:
         return saved.id, signature
 
     async def reply_to_inbox(
-        self, inbox_id: uuid.UUID, body: str, username: str | None, secret: str | None
+        self, inbox_id: uuid.UUID, body: str, username: str = None, secret: str = None
     ) -> None:
         inbox = await self.repository.get_by_id(inbox_id)
         if not inbox:
-            return None
+            raise NotFoundError("Inbox not found.")
 
-        sender_signature = None
-        if username and secret:
-            sender_signature = generate_tripcode(username, secret)
+        signature = generate_tripcode(username, secret)
 
-        inbox.add_message(body, signature=sender_signature)
+        inbox.validate_new_message(signature)
 
-        await self.repository.save(inbox)
+        new_message = Message(
+            inbox_id=inbox.id,
+            body=body,
+            signature=signature,
+            created_at=datetime.now(timezone.utc),
+        )
+        
+        await self.repository.add_message(new_message)
 
     async def change_topic(
         self, inbox_id: uuid.UUID, new_topic: str, username: str, secret: str
