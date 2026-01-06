@@ -85,3 +85,7 @@ This project implements a pragmatic, hybrid authorization model tailored for a "
 For endpoints requiring Headers auth (Owner role), use:
 - `X-username`: Your username
 - `X-secret`: Your secret password
+
+
+## Run tests
+uv run pytest -q tests/integration
