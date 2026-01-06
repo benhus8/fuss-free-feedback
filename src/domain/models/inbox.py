@@ -48,19 +48,3 @@ class Inbox:
             raise AnonymousMessagesNotAllowedError(
                 "Anonymous messages are not allowed here."
             )
-
-    def add_message(self, body: str, signature: Optional[str] = None) -> Message:
-        """
-        Adds a reply enforcing expiration and anonymity rules.
-        """
-        if self.is_expired:
-            raise InboxExpiredError("Inbox expired.")
-
-        if not self.allow_anonymous and signature is None:
-            raise AnonymousMessagesNotAllowedError("Signature required.")
-
-        new_msg = Message(
-            body=body, created_at=datetime.now(timezone.utc), signature=signature
-        )
-        self.messages.append(new_msg)
-        return new_msg
