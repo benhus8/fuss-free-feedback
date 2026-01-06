@@ -1,4 +1,3 @@
-# TODO implement RFC 7807
 class DomainError(Exception):
     """Base exception for all domain-related errors."""
 

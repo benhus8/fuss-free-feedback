@@ -24,17 +24,18 @@ class BaseSchema(BaseModel):
     )
 
 
-class Credentials(BaseSchema):
-    username: UsernameType
-    secret: SecretType
-
-
 class CreateInboxRequest(BaseSchema):
     topic: TopicType
     username: UsernameType
     secret: SecretType
     expires_at: FutureDatetime
     allow_anonymous: bool
+
+    @model_validator(mode="after")
+    def ensure_credentials_present(self):
+        if not self.username or not self.secret:
+            raise ValueError("Username and secret are required to create an inbox.")
+        return self
 
 
 class ReplyRequest(BaseSchema):
@@ -57,8 +58,6 @@ class ReplyRequest(BaseSchema):
 
 class ChangeTopicRequest(BaseSchema):
     new_topic: TopicType
-    username: UsernameType
-    secret: SecretType
 
 
 class InboxOverview(BaseModel):
@@ -74,6 +73,13 @@ class InboxesResponse(BaseModel):
     inboxes: List[InboxOverview]
 
     model_config = ConfigDict(from_attributes=True)
+
+class InboxPublicResponse(BaseModel):
+    id: uuid.UUID
+    topic: str
+    owner_signature: str
+    expires_at: datetime
+    allow_anonymous: bool
 
 
 class CreatedInboxResponse(BaseModel):
@@ -101,8 +107,3 @@ class MessagesResponse(BaseModel):
     messages: List[MessageOverview]
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class Credentials(BaseModel):
-    username: str
-    secret: str

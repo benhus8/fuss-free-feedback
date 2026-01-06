@@ -2,11 +2,10 @@ import uuid
 from datetime import datetime
 from typing import List
 
-from src.domain.exceptions import InvalidSignatureError, NotFoundError
+from src.domain.exceptions import NotFoundError
 from src.application.utils import generate_tripcode
 from src.domain.models import Inbox, Message
 from src.domain.repositories import InboxRepository
-from src.infrastructure.repositories.inbox import SqlAlchemyInboxRepository
 
 
 class InboxService:
@@ -53,12 +52,13 @@ class InboxService:
         self, inbox_id: uuid.UUID, new_topic: str, username: str, secret: str
     ) -> Inbox | None:
         inbox = self.repository.get_by_id(inbox_id)
+
         if not inbox:
-            return None
+            raise NotFoundError("Inbox not found.")
 
-        provided_sig = generate_tripcode(username, secret)
+        provided_signature = generate_tripcode(username, secret)
+        inbox.validate_ownership(provided_signature)
 
-        inbox.validate_ownership(provided_sig)
         inbox.change_topic(new_topic)
 
         self.repository.save(inbox)
@@ -87,3 +87,11 @@ class InboxService:
         return self.repository.get_by_signature(
             owner_signature, limit=page_size, offset=(page - 1) * page_size
         )
+
+    def get_inbox_metadata(self, inbox_id: uuid.UUID) -> Inbox:
+        inbox = self.repository.get_by_id(inbox_id)
+
+        if not inbox:
+            raise NotFoundError("Inbox not found.")
+
+        return inbox
