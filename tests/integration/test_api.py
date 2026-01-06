@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, Callable, Awaitable
+from typing import Dict, Any
 
 
 TEST_TOPIC = "Product Feedback Topic"

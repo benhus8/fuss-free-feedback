@@ -1,9 +1,8 @@
-from src.domain.models import Inbox, Message
-from src.infrastructure.database.models import InboxDB, MessageDB
+from src.domain.models import Inbox
+from src.infrastructure.database.models import InboxDB
 from datetime import timezone
 
 
-# TODO unit tests of that mapper
 class InboxMapper:
     """
     Data Mapper Pattern.

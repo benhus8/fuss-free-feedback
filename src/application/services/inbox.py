@@ -8,6 +8,7 @@ from src.domain.models import Inbox, Message
 from src.domain.repositories import InboxRepository
 from datetime import timezone
 
+
 class InboxService:
     def __init__(self, repository: InboxRepository):
         self.repository = repository
@@ -50,7 +51,7 @@ class InboxService:
             signature=signature,
             created_at=datetime.now(timezone.utc),
         )
-        
+
         await self.repository.add_message(new_message)
 
     async def change_topic(

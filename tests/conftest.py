@@ -1,11 +1,6 @@
 import sys
 from pathlib import Path
 
-# Dodajemy root projektu do ścieżki
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
 import pytest
 import pytest_asyncio
 import httpx
@@ -13,6 +8,11 @@ from fastapi.routing import APIRoute
 
 from src.main import app
 from src.interface.dependencies import get_db_session
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 
 pytest_plugins = ("pytest_asyncio",)
 

@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional
-from sqlmodel import Session, select
+from sqlmodel import select
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 

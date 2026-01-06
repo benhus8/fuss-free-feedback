@@ -1,7 +1,5 @@
 import uuid
 from fastapi import APIRouter, Depends, Response, Query, Header
-from fastapi.responses import JSONResponse
-from typing import List
 
 from src.interface.dependencies import get_service
 from src.application.services.inbox import InboxService

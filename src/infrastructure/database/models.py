@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import List, Optional
+from sqlalchemy import Column, DateTime
 from sqlmodel import SQLModel, Field, Relationship, Index
 
 
@@ -15,7 +16,9 @@ class MessageDB(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     body: str
-    created_at: datetime
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
     signature: Optional[str] = None
 
     inbox_id: uuid.UUID = Field(foreign_key="inboxes.id")
@@ -33,7 +36,9 @@ class InboxDB(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     topic: str
     owner_signature: str
-    expires_at: datetime
+    expires_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
     allow_anonymous: bool
 
     # One-to-Many relationship with Messages.
