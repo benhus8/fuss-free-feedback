@@ -65,14 +65,11 @@ async def test_create_inbox_success(
 async def test_public_access_returns_topic(
     client: AsyncClient, api_prefix: str, create_inbox
 ):
-    # Arrange: use factory with a custom topic
     custom_payload = _get_valid_payload_copy_with(topic="Public Topic Check")
     _, inbox_id = await create_inbox(custom_payload)
 
-    # Act
     resp = await client.get(f"{api_prefix}/inboxes/{inbox_id}")
 
-    # Assert
     assert resp.status_code == 200
     data = resp.json()
     assert data["topic"] == "Public Topic Check"
@@ -84,13 +81,10 @@ async def test_public_access_returns_topic(
 async def test_messages_unauthorized_access(
     client: AsyncClient, api_prefix: str, create_inbox
 ):
-    # Arrange
     _, inbox_id = await create_inbox()
 
-    # Act: read WITHOUT headers
     resp = await client.get(f"{api_prefix}/inboxes/{inbox_id}/messages")
 
-    # Assert
     assert resp.status_code == 422
 
 
@@ -98,15 +92,12 @@ async def test_messages_unauthorized_access(
 async def test_messages_empty_for_new_inbox_with_auth(
     client: AsyncClient, api_prefix: str, create_inbox, auth_headers
 ):
-    # Arrange
     _, inbox_id = await create_inbox()
 
-    # Act: fetch WITH headers
     resp = await client.get(
         f"{api_prefix}/inboxes/{inbox_id}/messages", headers=auth_headers
     )
 
-    # Assert
     assert resp.status_code == 200
     data = resp.json()
     assert data["messages"] == []
@@ -116,22 +107,18 @@ async def test_messages_empty_for_new_inbox_with_auth(
 async def test_post_message_and_fetch_with_auth(
     client: AsyncClient, api_prefix: str, create_inbox, auth_headers
 ):
-    # Arrange: create inbox
     _, inbox_id = await create_inbox()
 
-    # Act 1: post message (anonymous)
     reply_url = f"{api_prefix}/inboxes/{inbox_id}/messages"
     reply_payload = {"body": "This is a test message!"}
 
     reply_resp = await client.post(reply_url, json=reply_payload)
     assert reply_resp.status_code == 201
 
-    # Act 2: fetch messages as owner
     read_resp = await client.get(
         f"{api_prefix}/inboxes/{inbox_id}/messages", headers=auth_headers
     )
 
-    # Assert
     assert read_resp.status_code == 200
     messages = read_resp.json()["messages"]
 
@@ -153,7 +140,6 @@ async def test_create_inbox_invalid_payload(client: AsyncClient, api_prefix: str
     assert resp.status_code == 422
     errors = resp.json()["detail"]
 
-    # Extract field names from validation errors
     error_fields = {str(err["loc"][-1]) for err in errors}
 
     assert {"username", "secret", "expires_at"}.issubset(error_fields)
