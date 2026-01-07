@@ -80,7 +80,7 @@ async def change_topic(
 ):
     await service.change_topic(
         inbox_id=inbox_id,
-        new_topic=req.new_topic,
+        new_topic=req.topic,
         username=x_username,
         secret=x_secret,
     )

@@ -57,7 +57,7 @@ class ReplyRequest(BaseSchema):
 
 
 class ChangeTopicRequest(BaseSchema):
-    new_topic: TopicType
+    topic: TopicType
 
 
 class InboxOverview(BaseModel):
@@ -100,6 +100,7 @@ class MessageOverview(BaseModel):
     id: int
     body: str
     created_at: datetime
+    signature: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

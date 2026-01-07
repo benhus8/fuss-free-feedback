@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from src.domain.exceptions import (
     DomainError,
     InboxExpiredError,
+    NotFoundError,
     TopicChangeNotAllowedError,
     InvalidSignatureError,
     AnonymousMessagesNotAllowedError,
@@ -14,6 +15,7 @@ EXCEPTION_MAPPING = {
     InboxExpiredError: (status.HTTP_410_GONE, "Inbox Expired"),
     TopicChangeNotAllowedError: (status.HTTP_409_CONFLICT, "State Conflict"),
     InvalidSignatureError: (status.HTTP_403_FORBIDDEN, "Invalid Credentials"),
+    NotFoundError: (status.HTTP_404_NOT_FOUND, "Resource Not Found"),
     AnonymousMessagesNotAllowedError: (
         status.HTTP_403_FORBIDDEN,
         "Anonymity Forbidden",

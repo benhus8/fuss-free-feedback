@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from sqlalchemy import Column, DateTime
-from sqlmodel import SQLModel, Field, Relationship, Index
+from sqlmodel import SQLModel, Field, Index
 
 
 class MessageDB(SQLModel, table=True):
@@ -23,8 +23,6 @@ class MessageDB(SQLModel, table=True):
 
     inbox_id: uuid.UUID = Field(foreign_key="inboxes.id")
 
-    inbox: Optional["InboxDB"] = Relationship(back_populates="messages")
-
 
 class InboxDB(SQLModel, table=True):
     """
@@ -40,7 +38,3 @@ class InboxDB(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False)
     )
     allow_anonymous: bool
-
-    messages: List[MessageDB] = Relationship(
-        back_populates="inbox", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
-    )

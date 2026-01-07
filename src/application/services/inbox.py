@@ -44,12 +44,16 @@ class InboxService:
         return saved.id, signature
 
     async def reply_to_inbox(
-        self, inbox_id: uuid.UUID, body: str, username: str = None, secret: str = None
+        self, inbox_id: uuid.UUID, body: str, username: str, secret: str
     ) -> None:
         logger.debug("Fetching inbox id=%s for reply", inbox_id)
         inbox = await self._get_inbox_or_fail(inbox_id)
 
-        signature = generate_tripcode(username, secret)
+        if username and secret:
+            signature = generate_tripcode(username, secret)
+        else:
+            signature = None
+
         logger.debug("Validating new message for inbox id=%s", inbox.id)
         inbox.validate_new_message(signature)
 
@@ -68,10 +72,12 @@ class InboxService:
     ) -> Inbox | None:
         logger.debug("Fetching inbox id=%s to change topic", inbox_id)
         inbox = await self._get_inbox_or_fail(inbox_id)
-
         self._validate_owner(inbox, username, secret)
 
-        inbox.change_topic(new_topic)
+        inbox_message = await self.repository.get_messages_for_inbox(
+            inbox_id=inbox.id, limit=1, offset=0
+        )
+        inbox.change_topic(new_topic, inbox_message)
 
         await self.repository.save(inbox)
         logger.info("Inbox topic changed id=%s", inbox.id)
