@@ -66,7 +66,7 @@ async def reply_to_inbox(
 
 
 @router.patch(
-    "/{inbox_id}/topic",
+    "/{inbox_id}",
     status_code=204,
     response_class=Response,
     summary="Update the inbox topic (owner-only)",

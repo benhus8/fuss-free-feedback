@@ -12,7 +12,7 @@ from src.domain.exceptions import (
 from src.interface.schemas import ProblemDetails
 
 EXCEPTION_MAPPING = {
-    InboxExpiredError: (status.HTTP_410_GONE, "Inbox Expired"),
+    InboxExpiredError: (status.HTTP_403_FORBIDDEN, "Inbox Expired"),
     TopicChangeNotAllowedError: (status.HTTP_409_CONFLICT, "State Conflict"),
     InvalidSignatureError: (status.HTTP_403_FORBIDDEN, "Invalid Credentials"),
     NotFoundError: (status.HTTP_404_NOT_FOUND, "Resource Not Found"),
