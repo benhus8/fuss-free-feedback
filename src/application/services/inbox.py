@@ -77,7 +77,8 @@ class InboxService:
         inbox_message = await self.repository.get_messages_for_inbox(
             inbox_id=inbox.id, limit=1, offset=0
         )
-        inbox.change_topic(new_topic, inbox_message)
+        has_messages=bool(inbox_message)
+        inbox.change_topic(new_topic, has_messages=has_messages)
 
         await self.repository.save(inbox)
         logger.info("Inbox topic changed id=%s", inbox.id)

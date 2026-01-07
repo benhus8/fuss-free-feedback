@@ -29,11 +29,11 @@ class Inbox:
         if self.owner_signature != provided_signature:
             raise InvalidSignatureError("ACCESS_DENIED")
 
-    def change_topic(self, new_topic: str, messages: List[Message]) -> None:
+    def change_topic(self, new_topic: str, has_messages: bool) -> None:
         """
         Updates topic. Raises error if inbox is not empty.
         """
-        if messages:
+        if has_messages:
             raise TopicChangeNotAllowedError("Inbox already has replies.")
         self.topic = new_topic
 

@@ -67,16 +67,21 @@ async def test_create_inbox_success(service, mock_repo):
 @pytest.mark.asyncio
 async def test_reply_to_inbox_success(service, mock_repo, mock_inbox_entity):
     mock_repo.get_by_id.return_value = mock_inbox_entity
+
     with patch(
         "src.application.services.inbox.generate_tripcode",
         return_value=MOCKED_SIGNATURE,
     ):
         await service.reply_to_inbox(INBOX_ID, "Hello Body", USERNAME, SECRET)
+
     mock_repo.get_by_id.assert_called_with(INBOX_ID)
+
     mock_inbox_entity.validate_new_message.assert_called_with(MOCKED_SIGNATURE)
+
     mock_repo.add_message.assert_called_once()
-    args, _ = mock_repo.add_message.call_args
+    args, kwargs = mock_repo.add_message.call_args
     message_arg = args[0]
+
     assert isinstance(message_arg, Message)
     assert message_arg.inbox_id == INBOX_ID
     assert message_arg.body == "Hello Body"
@@ -87,7 +92,7 @@ async def test_reply_to_inbox_success(service, mock_repo, mock_inbox_entity):
 async def test_reply_to_inbox_not_found(service, mock_repo):
     mock_repo.get_by_id.return_value = None
     with pytest.raises(NotFoundError):
-        await service.reply_to_inbox(INBOX_ID, "Body")
+        await service.reply_to_inbox(INBOX_ID, "Body", USERNAME, SECRET)
     mock_repo.add_message.assert_not_called()
 
 
@@ -96,13 +101,16 @@ async def test_reply_to_inbox_validation_fails(service, mock_repo, mock_inbox_en
     mock_repo.get_by_id.return_value = mock_inbox_entity
     mock_inbox_entity.validate_new_message.side_effect = InboxExpiredError("Expired")
     with pytest.raises(InboxExpiredError):
-        await service.reply_to_inbox(INBOX_ID, "Body")
+        await service.reply_to_inbox(INBOX_ID, "Body", USERNAME, SECRET)
     mock_repo.add_message.assert_not_called()
 
 
 @pytest.mark.asyncio
 async def test_change_topic_success(service, mock_repo, mock_inbox_entity):
     mock_repo.get_by_id.return_value = mock_inbox_entity
+
+    mock_repo.get_messages_for_inbox.return_value = []
+
     with patch(
         "src.application.services.inbox.generate_tripcode",
         return_value=MOCKED_SIGNATURE,
@@ -110,8 +118,17 @@ async def test_change_topic_success(service, mock_repo, mock_inbox_entity):
         result = await service.change_topic(
             INBOX_ID, "Brand New Topic", USERNAME, SECRET
         )
+
     mock_inbox_entity.validate_ownership.assert_called_with(MOCKED_SIGNATURE)
-    mock_inbox_entity.change_topic.assert_called_with("Brand New Topic")
+
+    mock_repo.get_messages_for_inbox.assert_called_with(
+        inbox_id=INBOX_ID, limit=1, offset=0
+    )
+
+    mock_inbox_entity.change_topic.assert_called_with(
+        "Brand New Topic", has_messages=False
+    )
+
     mock_repo.save.assert_called_with(mock_inbox_entity)
     assert result == mock_inbox_entity
 

@@ -65,7 +65,7 @@ def test_validate_ownership_raises_error(valid_inbox):
 
 
 def test_change_topic_success_when_empty(valid_inbox):
-    valid_inbox.change_topic("New Topic")
+    valid_inbox.change_topic("New Topic", has_messages=False)
     assert valid_inbox.topic == "New Topic"
 
 
@@ -73,7 +73,7 @@ def test_change_topic_fails_when_messages_exist(valid_inbox):
     valid_inbox.messages.append("Dummy Message")
 
     with pytest.raises(TopicChangeNotAllowedError):
-        valid_inbox.change_topic("New Topic")
+        valid_inbox.change_topic("New Topic", has_messages=True)
 
     assert valid_inbox.topic == "General Topic"
 
