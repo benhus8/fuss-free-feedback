@@ -41,9 +41,6 @@ class InboxDB(SQLModel, table=True):
     )
     allow_anonymous: bool
 
-    # One-to-Many relationship with Messages.
-    # 'cascade="all, delete-orphan"' ensures that if an Inbox is deleted,
-    # all its messages are also removed from the database.
     messages: List[MessageDB] = Relationship(
         back_populates="inbox", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
